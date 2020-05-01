@@ -1,6 +1,14 @@
 package q003;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Q003 集計と並べ替え
@@ -26,6 +34,10 @@ ignorance=1
  * http://eikaiwa.dmm.com/blog/4690/
  */
 public class Q003 {
+    private static final Pattern p1 = Pattern.compile(" ");
+    private static final Pattern p2 = Pattern.compile("[^A-Za-z'-]");
+    private static final Pattern p3 = Pattern.compile("[A-Za-z]");
+
     /**
      * データファイルを開く
      * resources/q003/data.txt
@@ -33,5 +45,15 @@ public class Q003 {
     private static InputStream openDataFile() {
         return Q003.class.getResourceAsStream("data.txt");
     }
+
+    public static void main(String[] args) throws IOException {
+        new BufferedReader(new InputStreamReader(openDataFile())).lines().flatMap(p1::splitAsStream)
+                .map(str -> p2.matcher(str).replaceAll(""))
+                .filter(str -> p3.matcher(str).find())
+                .map(str -> str.equals("I") ? str : str.toLowerCase())
+                .collect(Collectors.groupingBy(UnaryOperator.identity(), Collectors.counting())).entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .map(entry -> entry.getKey() + "=" + entry.getValue()).forEach(System.out::println);
+    }
 }
-// 完成までの時間: xx時間 xx分
+// 完成までの時間: 00時間 23分
