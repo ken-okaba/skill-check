@@ -1,5 +1,15 @@
 package q009;
 
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 /**
  * Q009 重い処理を別スレッドで実行
  *
@@ -22,5 +32,73 @@ package q009;
 12345: 3,5,823
  */
 public class Q009 {
+
+    private static final BigInteger TWO = new BigInteger("2");
+
+    public static void main(String[] args) {
+
+        Map<CompletableFuture<String>, BigInteger> map = new LinkedHashMap<>();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.print("入力) ");
+                execute(map, scanner.nextLine());
+            }
+        } catch (NumberFormatException e) {
+            // 空文字と数値以外の場合は、完了を待機して終了
+            map.entrySet().stream().map(entry -> entry.getValue() + ": " + entry.getKey().join())
+                    .forEach(System.out::println);
+        }
+    }
+
+    private static void execute(Map<CompletableFuture<String>, BigInteger> map, String input) {
+
+        if (!input.isEmpty()) {
+            BigInteger number = new BigInteger(input);
+            map.put(CompletableFuture.supplyAsync(() -> factorizePrime(number)), number);
+            return;
+        }
+
+        Iterator<Map.Entry<CompletableFuture<String>, BigInteger>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<CompletableFuture<String>, BigInteger> entry = it.next();
+            if (entry.getKey().isDone()) {
+                System.out.println(entry.getValue() + ": " + entry.getKey().join());
+                it.remove();
+            } else {
+                System.out.println(entry.getValue() + ": 実行中");
+            }
+        }
+    }
+
+    private static String factorizePrime(BigInteger number) {
+        return factorizePrime2(number).stream().distinct().map(BigInteger::toString).collect(Collectors.joining(","));
+    }
+
+    private static List<BigInteger> factorizePrime2(final BigInteger number) {
+
+        BigInteger target = number;
+        List<BigInteger> list = new LinkedList<>();
+
+        if (target.compareTo(TWO) <= 0) {
+            list.add(target);
+            return list;
+        }
+
+        BigInteger max = number.sqrt().add(BigInteger.ONE);
+        for (BigInteger bi = TWO; bi.compareTo(max) <= 0; bi = bi.add(BigInteger.ONE)) {
+            if (!bi.isProbablePrime(100)) {
+                continue;
+            }
+            while (target.remainder(bi).equals(BigInteger.ZERO)) {
+                list.add(bi);
+                target = target.divide(bi);
+            }
+            if (target.equals(BigInteger.ONE)) {
+                return list;
+            }
+        }
+        list.add(target);
+        return list;
+    }
 }
-// 完成までの時間: xx時間 xx分
+// 完成までの時間: 01時間 00分
