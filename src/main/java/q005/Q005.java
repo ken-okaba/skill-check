@@ -1,5 +1,11 @@
 package q005;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * Q005 データクラスと様々な集計
  *
@@ -30,5 +36,26 @@ T-7-30002: xx時間xx分
 （省略）
  */
 public class Q005 {
+    public static void main(String[] args) {
+        List<WorkData> list = toWorkDataList();
+        print(list, WorkData::getPosition);
+        print(list, WorkData::getpCode);
+        print(list, WorkData::getNumber);
+    }
+
+    private static List<WorkData> toWorkDataList() {
+        return new BufferedReader(new InputStreamReader(Q005.class.getResourceAsStream("data.txt")))
+                .lines().skip(1).map(line -> line.split(","))
+                .map(columns -> new WorkData(columns[0], columns[1], columns[2], columns[3],
+                        Integer.parseInt(columns[4])))
+                .collect(Collectors.toList());
+    }
+
+    private static void print(List<WorkData> list, Function<WorkData, String> func) {
+        list.stream().collect(Collectors.groupingBy(func, Collectors.summingInt(WorkData::getWorkTime))).entrySet()
+                .stream().map(entry -> String.format("%s: %d時間%02d分", entry.getKey(), entry.getValue() / 60,
+                        entry.getValue() % 60))
+                .forEach(System.out::println);
+    }
 }
-// 完成までの時間: xx時間 xx分
+// 完成までの時間: 00時間 17分
