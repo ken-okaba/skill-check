@@ -1,5 +1,8 @@
 package q002;
 
+import java.util.Comparator;
+import java.util.stream.Stream;
+
 /**
  * Q002 並べ替える
  *
@@ -45,5 +48,12 @@ public class Q002 {
             "14,林",
             "9,清水"
     };
+
+    public static void main(String[] args) {
+        Stream.of(dataList).map(data -> data.split(","))
+                .sorted(Comparator.comparingInt(data -> Integer.parseInt(data[0])))
+                .map(data -> data[0] + "," + data[1]).forEach(System.out::println);
+        ;
+    }
 }
-// 完成までの時間: xx時間 xx分
+// 完成までの時間: 00時間 04分
